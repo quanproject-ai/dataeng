@@ -33,12 +33,11 @@ select user_id,
 login_date,
 row_number() over(partition by user_id order by login_date) as rn,
 DATE_SUB(login_date, INTERVAL 1 day) as yesterday
--- DATE_SUB(login_date, INTERVAL 2 day) as two_days_ago
 from user_logins
 )
 
+/* solution will require to left join alot if the request increases to more than 2 consecutive days*/
 select  cl3.user_id
--- cl1.login_date, cl2.login_date, cl3.login_date
 from cont_login cl1
 left join  cont_login  cl2 
 on cl1.user_id = cl2.user_id and cl1.login_date = cl2.yesterday
@@ -46,6 +45,16 @@ left join cont_login cl3
 on cl2.user_id = cl3.user_id and cl2.login_date = cl3.yesterday
 where cl3.user_id  is not null 
 group by user_id
+
+/*this silution only rquire to modify the integer in the datediff and rn math*/
+select  distinct
+cl2.user_id
+from cont_login cl1 
+left join cont_login cl2 on 
+cl1.user_id = cl2.user_id
+and datediff(cl2.login_date,cl1.login_date)=2
+and cl2.rn - cl1.rn =2
+WHERE cl2.user_id is not null
 
 
 
